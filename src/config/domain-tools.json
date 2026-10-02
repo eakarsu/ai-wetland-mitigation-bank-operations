@@ -1,0 +1,65 @@
+[
+  {
+    "id": "domain-calculation",
+    "title": "Mitigation credit balance",
+    "operation": "ledger",
+    "example": {
+      "unit": "habitat credits",
+      "opening": 10,
+      "additions": [
+        {
+          "id": "release-1",
+          "amount": 3
+        }
+      ],
+      "deductions": [
+        {
+          "id": "sale-1",
+          "amount": 4
+        }
+      ]
+    },
+    "description": "Balance explicitly authorized releases and sales within one habitat and service area; never create regulatory credits."
+  },
+  {
+    "id": "evidence-check",
+    "operation": "evidence",
+    "title": "Mitigation Bank evidence checklist",
+    "description": "Check source presence against an explicitly supplied document list; reviewer assesses adequacy.",
+    "example": {
+      "requirements": [
+        {
+          "id": "source-1",
+          "requirement": "Mitigation Parcel evidence",
+          "evidence": "Example source reference"
+        },
+        {
+          "id": "source-2",
+          "requirement": "Reviewed rule version",
+          "evidence": ""
+        }
+      ]
+    }
+  },
+  {
+    "id": "deadline-check",
+    "operation": "deadlines",
+    "title": "Operational deadline queue",
+    "description": "Compute overdue items from entered dates and completed flags; no external notifications.",
+    "example": {
+      "asOf": "2026-10-20T12:00:00Z",
+      "items": [
+        {
+          "id": "review-1",
+          "dueAt": "2026-10-18T00:00:00Z",
+          "completed": false
+        },
+        {
+          "id": "follow-up-1",
+          "dueAt": "2026-10-23T00:00:00Z",
+          "completed": false
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,360 @@
+// Generated schema — modeled after beautyhqio conventions.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  active       Boolean @default(true)
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(ANALYST)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  ANALYST
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actorName String?
+  action    String
+  entity    String
+  entityId  String?
+  detail    String?
+  createdAt DateTime @default(now())
+}
+
+model WorkflowAnalysis {
+ id String @id @default(cuid())
+ actorId String
+ workflow String
+ subjectEntity String
+ subjectId String
+ input Json
+ evidence Json
+ evidenceHash String
+ result Json
+ model String
+ receipt String?
+ createdAt DateTime @default(now())
+ @@index([workflow, createdAt])
+}
+model RecordReview {
+ id String @id @default(cuid())
+ actorId String
+ entity String
+ entityId String
+ version String
+ reason String
+ createdAt DateTime @default(now())
+ @@unique([entity, entityId, version, actorId])
+}
+model UsageBucket {
+ id String @id
+ calls Int
+}
+model IssuedCredential {
+ token String @id
+ entity String
+ entityId String
+ version String
+ assertion Json
+ createdAt DateTime @default(now())
+ revokedAt DateTime?
+ @@index([entity, entityId, createdAt])
+}
+
+model DomainArtifact {
+ id String @id @default(cuid())
+ subjectEntity String
+ subjectId String
+ title String
+ content String
+ contentHash String
+ actorId String
+ approvedBy String?
+ createdAt DateTime @default(now())
+ @@index([subjectEntity, subjectId])
+}
+
+model RecordApproval {
+ id String @id
+ version String
+}
+model DomainExecution {
+ id String @id
+ actorId String
+ connectorId String
+ action String
+ subjectEntity String
+ subjectId String
+ version String
+ status String
+ result Json?
+ createdAt DateTime @default(now())
+}
+
+model WorkSession {
+ id String @id @default(cuid())
+ actorId String
+ respondentId String
+ subjectEntity String
+ subjectId String
+ questions Json
+ answers Json
+ currentQuestion String?
+ status String
+ deadline DateTime
+ createdAt DateTime @default(now())
+ @@index([respondentId, createdAt])
+}
+model SessionMedia {
+ id String @id @default(cuid())
+ sessionId String
+ questionId String
+ actorId String
+ contentType String
+ bytes Bytes
+ contentHash String
+ createdAt DateTime @default(now())
+ @@index([sessionId])
+}
+
+model AppSetting {
+ id String @id
+ value Json
+ updatedAt DateTime @updatedAt
+}
+
+model MitigationBank {
+ id String @id @default(cuid())
+ name String
+ permitNumber String
+ serviceArea String
+ sponsor String
+ habitatType String
+ establishedAt DateTime
+ status String @default("Draft")
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ inverseMitigationParcel_mitigationBankId MitigationParcel[] @relation("MitigationParcel_mitigationBankId")
+ inverseCreditRelease_mitigationBankId CreditRelease[] @relation("CreditRelease_mitigationBankId")
+ inverseCreditSale_mitigationBankId CreditSale[] @relation("CreditSale_mitigationBankId")
+ inverseMonitoringPlot_mitigationBankId MonitoringPlot[] @relation("MonitoringPlot_mitigationBankId")
+ inversePlotObservation_mitigationBankId PlotObservation[] @relation("PlotObservation_mitigationBankId")
+ inversePerformanceCriterion_mitigationBankId PerformanceCriterion[] @relation("PerformanceCriterion_mitigationBankId")
+ inverseAdaptiveAction_mitigationBankId AdaptiveAction[] @relation("AdaptiveAction_mitigationBankId")
+ inverseFinancialAssurance_mitigationBankId FinancialAssurance[] @relation("FinancialAssurance_mitigationBankId")
+ inverseOperationalTask_mitigationBankId OperationalTask[] @relation("OperationalTask_mitigationBankId")
+ inverseRuleVersion_mitigationBankId RuleVersion[] @relation("RuleVersion_mitigationBankId")
+ inverseDocumentRequirement_mitigationBankId DocumentRequirement[] @relation("DocumentRequirement_mitigationBankId")
+}
+
+model MitigationParcel {
+ id String @id @default(cuid())
+ name String
+ parcelNumber String
+ areaHectares Float
+ habitat String
+ baselineAt DateTime
+ owner String
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("MitigationParcel_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+ inverseMonitoringPlot_mitigationParcelId MonitoringPlot[] @relation("MonitoringPlot_mitigationParcelId")
+ inverseAdaptiveAction_mitigationParcelId AdaptiveAction[] @relation("AdaptiveAction_mitigationParcelId")
+}
+
+model CreditRelease {
+ id String @id @default(cuid())
+ title String
+ habitat String
+ units Float
+ releaseAt DateTime
+ authorizationReference String
+ conditionVersion String
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("CreditRelease_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model CreditSale {
+ id String @id @default(cuid())
+ title String
+ buyer String
+ habitat String
+ units Float
+ soldAt DateTime
+ permitReference String
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("CreditSale_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model MonitoringPlot {
+ id String @id @default(cuid())
+ title String
+ mitigationParcelId String
+ plotCode String
+ areaHectares Float
+ coordinates String
+ method String
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationParcelId MitigationParcel @relation("MonitoringPlot_mitigationParcelId", fields: [mitigationParcelId], references: [id], onDelete: Restrict)
+ linkedMitigationBankId MitigationBank @relation("MonitoringPlot_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+ inversePlotObservation_monitoringPlotId PlotObservation[] @relation("PlotObservation_monitoringPlotId")
+}
+
+model PlotObservation {
+ id String @id @default(cuid())
+ title String
+ monitoringPlotId String
+ observedAt DateTime
+ metric String
+ value Float
+ unit String
+ observer String
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMonitoringPlotId MonitoringPlot @relation("PlotObservation_monitoringPlotId", fields: [monitoringPlotId], references: [id], onDelete: Restrict)
+ linkedMitigationBankId MitigationBank @relation("PlotObservation_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model PerformanceCriterion {
+ id String @id @default(cuid())
+ title String
+ metric String
+ threshold Float
+ comparison String
+ version String
+ assessmentAt DateTime
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("PerformanceCriterion_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model AdaptiveAction {
+ id String @id @default(cuid())
+ title String
+ mitigationParcelId String
+ cause String
+ action String
+ owner String
+ dueAt DateTime
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationParcelId MitigationParcel @relation("AdaptiveAction_mitigationParcelId", fields: [mitigationParcelId], references: [id], onDelete: Restrict)
+ linkedMitigationBankId MitigationBank @relation("AdaptiveAction_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model FinancialAssurance {
+ id String @id @default(cuid())
+ title String
+ instrument String
+ issuer String
+ requiredCents Int
+ heldCents Int
+ expiry DateTime
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("FinancialAssurance_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model OperationalTask {
+ id String @id @default(cuid())
+ title String
+ owner String
+ priority String
+ startAt DateTime
+ dueAt DateTime
+ done Boolean
+ notes String?
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("OperationalTask_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model RuleVersion {
+ id String @id @default(cuid())
+ title String
+ jurisdiction String
+ version String
+ effectiveAt DateTime
+ expiresAt DateTime?
+ sourceUrl String
+ requirementText String
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("RuleVersion_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
+
+model DocumentRequirement {
+ id String @id @default(cuid())
+ title String
+ category String
+ requiredBy DateTime
+ sourceReference String
+ evidenceReference String?
+ reviewNotes String?
+ status String @default("Draft")
+ mitigationBankId String
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@index([createdAt])
+ @@index([mitigationBankId])
+ linkedMitigationBankId MitigationBank @relation("DocumentRequirement_mitigationBankId", fields: [mitigationBankId], references: [id], onDelete: Restrict)
+}
